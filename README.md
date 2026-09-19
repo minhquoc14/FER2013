@@ -1,14 +1,7 @@
 # Facial Expression Recognition (FER2013)
 
-> Đồ án môn **CS231 – Nhập môn Thị giác máy tính** — Nhóm 6
 > So sánh 5 phương pháp nhận diện cảm xúc khuôn mặt trên bộ dữ liệu **FER2013** (kết hợp thêm **RAF-DB** cho phương pháp mạnh nhất), có kèm web demo real-time.
 
-![Python](https://img.shields.io/badge/python-3.9%2B-blue)
-![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-orange)
-![FastAPI](https://img.shields.io/badge/FastAPI-backend-teal)
-![License](https://img.shields.io/badge/license-Academic-lightgrey)
-
----
 
 ## 1. Giới thiệu
 
