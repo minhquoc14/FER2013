@@ -1,12 +1,8 @@
 # Facial Expression Recognition (FER2013)
 
-> Đồ án môn **CS231 – Nhập môn Thị giác máy tính** — Nhóm 6
+
 > So sánh 5 phương pháp nhận diện cảm xúc khuôn mặt trên bộ dữ liệu **FER2013** (kết hợp thêm **RAF-DB** cho phương pháp mạnh nhất), có kèm web demo real-time.
 
-![Python](https://img.shields.io/badge/python-3.9%2B-blue)
-![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-orange)
-![FastAPI](https://img.shields.io/badge/FastAPI-backend-teal)
-![License](https://img.shields.io/badge/license-Academic-lightgrey)
 
 ---
 
@@ -153,8 +149,6 @@ python plot_distribution.py --data data/fer2013
 
 Confusion matrix và biểu đồ so sánh chi tiết theo từng lớp cảm xúc: xem thư mục [`results_plots/`](results_plots/) (đặc biệt `overview_5methods.png` và `perclass_f1_5methods.png`).
 
-> ⚠️ **File model lớn (Git LFS):** `model_convnext_cbam.pth` và `model_convnext_cbam_scripted.pt` mỗi file ~108MB — vượt giới hạn 100MB của GitHub nên **bắt buộc dùng Git LFS** để clone đầy đủ (xem mục 3). Nếu không cần các checkpoint này, có thể bỏ qua bằng `GIT_LFS_SKIP_SMUDGE=1 git clone ...`.
-
 ---
 
 ## 7. Web demo (real-time)
@@ -191,22 +185,7 @@ Dữ liệu train/validation được chia bằng **Stratified Split** theo nhã
 
 ---
 
-## 9. Nhóm thực hiện
-
-**Group 6 — CS231, GVHD: Mai Tiến Dũng**
-
-| Họ Tên | MSSV | Đóng góp |
-|---|---|---|
-| | | |
-| | | |
-| | | |
-| | | |
-
-> *(Điền lại thông tin thành viên vào bảng theo file `Work allocation table` trong slide báo cáo.)*
-
----
-
-## 10. Tài liệu tham khảo
+## 9. Tài liệu tham khảo
 
 1. Deep Facial Expression Recognition: A Survey, 2020.
 2. FER2013 Dataset, Kaggle.
