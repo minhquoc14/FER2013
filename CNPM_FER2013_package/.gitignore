@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.Python
+build/
+dist/
+
+# Virtual env
+venv/
+.venv/
+env/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Dataset gốc (tự tải riêng theo hướng dẫn trong README, không commit ảnh)
+data/*
+!data/.gitkeep
+
+# Log / checkpoint tạm sinh ra trong lúc train (không phải checkpoint tốt nhất đã lưu)
+best_*.pth
+*.log

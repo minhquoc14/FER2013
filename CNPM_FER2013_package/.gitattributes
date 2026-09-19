@@ -1,0 +1,6 @@
+# Git LFS — theo dõi các file model nhị phân lớn
+# Bắt buộc phải cài Git LFS (git-lfs.github.com) trước khi clone/push repo này
+# 2 file model_convnext_cbam*.pt(h) vượt 100MB, GitHub sẽ TỪ CHỐI push nếu không dùng LFS
+*.pth  filter=lfs diff=lfs merge=lfs -text
+*.pt   filter=lfs diff=lfs merge=lfs -text
+*.pkl  filter=lfs diff=lfs merge=lfs -text

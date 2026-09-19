@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FER — Facial Expression Recognition</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:       #ffffff;
+    --surface:  #f8f8f8;
+    --card:     #ffffff;
+    --border:   #e0e0e0;
+    --border2:  #c0c0c0;
+    --text:     #111111;
+    --muted:    #888888;
+    --subtle:   #f0f0f0;
+    --accent:   #111111;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh; font-size: 14px; line-height: 1.6;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+
+  /* Header */
+  header {
+    padding: 40px 0 32px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+  .header-inner { display: flex; align-items: baseline; gap: 16px; }
+  .header-title { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+  .header-sub { font-size: 13px; color: var(--muted); }
+  .badge {
+    margin-left: auto;
+    font-size: 11px; font-family: 'JetBrains Mono', monospace;
+    padding: 3px 10px; border-radius: 2px;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+
+  /* Tabs */
+  .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
+  .tab {
+    padding: 10px 20px; background: transparent;
+    border: none; border-bottom: 2px solid transparent;
+    color: var(--muted); font-family: 'Inter', sans-serif;
+    font-size: 13px; cursor: pointer; transition: all .15s;
+    margin-bottom: -1px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+
+  /* Upload */
+  .upload-zone {
+    border: 1px dashed var(--border2); border-radius: 4px;
+    padding: 56px 24px; text-align: center; cursor: pointer;
+    transition: all .2s; background: var(--surface);
+    position: relative; overflow: hidden;
+  }
+  .upload-zone:hover, .upload-zone.drag {
+    border-color: var(--text); background: var(--subtle);
+  }
+  .upload-zone .icon { font-size: 32px; margin-bottom: 12px; color: var(--muted); }
+  .upload-zone h3 { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .upload-zone p  { font-size: 12px; color: var(--muted); }
+  .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+  /* Preview */
+  .preview-wrap { display: none; margin-top: 24px; gap: 24px; align-items: flex-start; }
+  .preview-wrap.show { display: flex; }
+  .preview-img {
+    width: 160px; height: 160px; object-fit: cover;
+    border-radius: 2px; border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .preview-info { flex: 1; }
+  .preview-label { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .preview-name { font-size: 13px; margin-bottom: 12px; }
+
+  /* Method selector */
+  .method-selector { display: flex; gap: 8px; margin: 28px 0; flex-wrap: wrap; }
+  .method-btn {
+    flex: 1; min-width: 110px; padding: 10px 12px;
+    border: 1px solid var(--border); border-radius: 2px;
+    background: var(--card); color: var(--text);
+    cursor: pointer; transition: all .15s; text-align: left;
+    font-family: 'Inter', sans-serif;
+  }
+  .method-btn:hover { border-color: var(--border2); }
+  .method-btn.selected { border-color: var(--text); background: var(--text); color: #fff; }
+  .method-btn.selected .m-acc { color: rgba(255,255,255,0.6); }
+  .method-btn .m-name { font-size: 12px; font-weight: 500; margin-bottom: 2px; }
+  .method-btn .m-acc  { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+  /* Buttons */
+  .btn-predict {
+    width: 100%; padding: 12px; border-radius: 2px;
+    border: 1px solid var(--text); background: var(--text);
+    color: #fff; font-size: 13px; font-weight: 500;
+    font-family: 'Inter', sans-serif; cursor: pointer;
+    transition: opacity .15s; margin-top: 8px;
+  }
+  .btn-predict:hover { opacity: .85; }
+  .btn-predict:disabled { opacity: .3; cursor: not-allowed; }
+  .btn-reset {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--muted); padding: 6px 14px; border-radius: 2px;
+    font-size: 12px; cursor: pointer; font-family: 'Inter', sans-serif;
+    transition: all .15s;
+  }
+  .btn-reset:hover { border-color: var(--border2); color: var(--text); }
+
+  /* Result card */
+  .result-card {
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 24px; margin-top: 24px; display: none;
+    animation: fadeIn .25s ease;
+  }
+  .result-card.show { display: block; }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+  .result-top { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+  .emotion-emoji { font-size: 48px; line-height: 1; }
+  .emotion-info h2 { font-size: 26px; font-weight: 600; letter-spacing: -0.5px; }
+  .emotion-conf { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .meta-row { display: flex; gap: 24px; margin-bottom: 20px; flex-wrap: wrap; }
+  .meta-item { font-size: 11px; }
+  .meta-item .meta-label { color: var(--muted); font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px; display: block; margin-bottom: 2px; }
+  .meta-item .meta-val { color: var(--text); font-weight: 500; }
+
+  /* Prob bars */
+  .prob-section-title { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px; margin-bottom: 12px; }
+  .prob-bar-wrap { display: flex; flex-direction: column; gap: 8px; }
+  .prob-row { display: flex; align-items: center; gap: 10px; }
+  .prob-label { width: 88px; font-size: 12px; white-space: nowrap; }
+  .prob-track { flex: 1; height: 4px; background: var(--subtle); border-radius: 0; }
+  .prob-fill { height: 100%; background: var(--text); transition: width .5s ease; border-radius: 0; }
+  .prob-fill.top { background: #111; }
+  .prob-val { width: 40px; text-align: right; font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--muted); }
+
+  /* Compare grid */
+  .compare-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 24px; }
+  @media (max-width: 900px) { .compare-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 560px) { .compare-grid { grid-template-columns: 1fr; } }
+
+  .compare-card {
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 14px; display: none; animation: fadeIn .25s ease;
+  }
+  .compare-card.show { display: block; }
+  .compare-card.winner { border-color: var(--text); }
+
+  .cc-header { margin-bottom: 10px; }
+  .cc-method { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--muted); display: block; margin-bottom: 2px; letter-spacing: 0.3px; }
+  .cc-acc { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--text); font-weight: 500; }
+  .cc-emotion { font-size: 28px; text-align: center; margin: 8px 0 4px; }
+  .cc-label { font-size: 13px; font-weight: 600; text-align: center; }
+  .cc-conf { font-size: 11px; color: var(--muted); text-align: center; font-family: 'JetBrains Mono', monospace; margin: 4px 0 10px; }
+  .winner-badge { display: block; text-align: center; font-size: 9px; font-family: 'JetBrains Mono', monospace; color: var(--text); margin-bottom: 8px; letter-spacing: 1px; border-top: 1px solid var(--border); padding-top: 6px; }
+
+  /* Spinner & Error */
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 1.5px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error-msg { border: 1px solid #e0e0e0; border-left: 3px solid #888; color: #666; border-radius: 2px; padding: 10px 14px; font-size: 12px; margin-top: 16px; display: none; background: var(--surface); }
+  .error-msg.show { display: block; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="header-inner">
+      <span class="header-title">FER Demo</span>
+      <span class="header-sub">Facial Expression Recognition</span>
+      <span class="badge">5 METHODS</span>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('single')">Single method</button>
+    <button class="tab" onclick="switchTab('compare')">Compare all 5</button>
+  </div>
+
+  <div class="upload-zone" id="uploadZone">
+    <input type="file" id="fileInput" accept="image/*" onchange="handleFile(this.files[0])"/>
+    <div class="icon">↑</div>
+    <h3>Kéo thả hoặc click để upload ảnh</h3>
+    <p>JPG, PNG · Ảnh khuôn mặt cho kết quả tốt nhất</p>
+  </div>
+
+  <div class="preview-wrap" id="previewWrap">
+    <img id="previewImg" class="preview-img" src="" alt="preview"/>
+    <div class="preview-info">
+      <div class="preview-label">ẢNH ĐÃ CHỌN</div>
+      <div class="preview-name" id="fileName">—</div>
+      <button class="btn-reset" onclick="resetAll()">✕ Chọn ảnh khác</button>
+    </div>
+  </div>
+
+  <!-- SINGLE MODE -->
+  <div id="singleMode">
+    <div class="method-selector">
+      <button class="method-btn selected" onclick="selectMethod('lbp', this)">
+        <div class="m-name">LBP + SVM</div>
+        <div class="m-acc">28.00% · Shallow</div>
+      </button>
+      <button class="method-btn" onclick="selectMethod('cnn', this)">
+        <div class="m-name">CNN</div>
+        <div class="m-acc">63.49% · Deep</div>
+      </button>
+      <button class="method-btn" onclick="selectMethod('pretrained', this)">
+        <div class="m-name">EfficientNet-B2</div>
+        <div class="m-acc">66.38% · Transfer</div>
+      </button>
+      <button class="method-btn" onclick="selectMethod('cbam', this)">
+        <div class="m-name">EffNet + CBAM</div>
+        <div class="m-acc">67.05% · Attention</div>
+      </button>
+      <button class="method-btn" onclick="selectMethod('convnext', this)">
+        <div class="m-name">ConvNeXt + CBAM</div>
+        <div class="m-acc">67.47% · Best</div>
+      </button>
+    </div>
+
+    <button class="btn-predict" id="btnPredict" onclick="predictSingle()" disabled>
+      Nhận diện cảm xúc
+    </button>
+    <div class="error-msg" id="singleError"></div>
+
+    <div class="result-card" id="singleResult">
+      <div class="result-top">
+        <div class="emotion-emoji" id="resEmoji">—</div>
+        <div class="emotion-info">
+          <h2 id="resEmotion">—</h2>
+          <div class="emotion-conf" id="resConf">—</div>
+        </div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-item">
+          <span class="meta-label">METHOD</span>
+          <span class="meta-val" id="resMethod">—</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">TIME</span>
+          <span class="meta-val" id="resTime">—</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">MODEL ACC</span>
+          <span class="meta-val" id="resAcc">—</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">FACES DETECTED</span>
+          <span class="meta-val" id="resFaces">—</span>
+        </div>
+      </div>
+      <div class="prob-section-title">PROBABILITY DISTRIBUTION</div>
+      <div class="prob-bar-wrap" id="probBars"></div>
+    </div>
+  </div>
+
+  <!-- COMPARE MODE -->
+  <div id="compareMode" style="display:none">
+    <button class="btn-predict" id="btnCompare" onclick="predictAll()" disabled style="margin-top:16px">
+      So sánh cả 5 phương pháp
+    </button>
+    <div class="error-msg" id="compareError"></div>
+
+    <div class="compare-grid" id="compareGrid">
+      <div class="compare-card" id="cc-lbp">
+        <div class="cc-header">
+          <span class="cc-method">LBP + SVM</span>
+          <span class="cc-acc">28.00%</span>
+        </div>
+        <div class="cc-emotion" id="cc-lbp-emoji">—</div>
+        <div class="cc-label"  id="cc-lbp-label">—</div>
+        <div class="cc-conf"   id="cc-lbp-conf">—</div>
+        <div class="prob-bar-wrap" id="cc-lbp-bars"></div>
+      </div>
+      <div class="compare-card" id="cc-cnn">
+        <div class="cc-header">
+          <span class="cc-method">CNN</span>
+          <span class="cc-acc">63.49%</span>
+        </div>
+        <div class="cc-emotion" id="cc-cnn-emoji">—</div>
+        <div class="cc-label"  id="cc-cnn-label">—</div>
+        <div class="cc-conf"   id="cc-cnn-conf">—</div>
+        <div class="prob-bar-wrap" id="cc-cnn-bars"></div>
+      </div>
+      <div class="compare-card" id="cc-pre">
+        <div class="cc-header">
+          <span class="cc-method">EfficientNet-B2</span>
+          <span class="cc-acc">66.38%</span>
+        </div>
+        <div class="cc-emotion" id="cc-pre-emoji">—</div>
+        <div class="cc-label"  id="cc-pre-label">—</div>
+        <div class="cc-conf"   id="cc-pre-conf">—</div>
+        <div class="prob-bar-wrap" id="cc-pre-bars"></div>
+      </div>
+      <div class="compare-card" id="cc-cbam">
+        <div class="cc-header">
+          <span class="cc-method">EffNet + CBAM</span>
+          <span class="cc-acc">67.05%</span>
+        </div>
+        <div class="cc-emotion" id="cc-cbam-emoji">—</div>
+        <div class="cc-label"  id="cc-cbam-label">—</div>
+        <div class="cc-conf"   id="cc-cbam-conf">—</div>
+        <div class="prob-bar-wrap" id="cc-cbam-bars"></div>
+      </div>
+      <div class="compare-card" id="cc-cnx">
+        <div class="cc-header">
+          <span class="cc-method">ConvNeXt + CBAM</span>
+          <span class="cc-acc">67.47%</span>
+        </div>
+        <div class="cc-emotion" id="cc-cnx-emoji">—</div>
+        <div class="cc-label"  id="cc-cnx-label">—</div>
+        <div class="cc-conf"   id="cc-cnx-conf">—</div>
+        <div class="prob-bar-wrap" id="cc-cnx-bars"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let currentFile = null;
+let selectedMethod = 'lbp';
+const API = 'http://localhost:8000';
+
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+zone.addEventListener('drop', e => {
+  e.preventDefault(); zone.classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('image/')) handleFile(f);
+});
+
+function handleFile(file) {
+  if (!file) return;
+  currentFile = file;
+  document.getElementById('previewImg').src = URL.createObjectURL(file);
+  document.getElementById('fileName').textContent = file.name + ' · ' + (file.size/1024).toFixed(1) + ' KB';
+  document.getElementById('previewWrap').classList.add('show');
+  document.getElementById('btnPredict').disabled = false;
+  document.getElementById('btnCompare').disabled = false;
+  document.getElementById('singleResult').classList.remove('show');
+  document.querySelectorAll('.compare-card').forEach(c => c.classList.remove('show','winner'));
+  hideErrors();
+}
+
+function resetAll() {
+  currentFile = null;
+  document.getElementById('previewWrap').classList.remove('show');
+  document.getElementById('singleResult').classList.remove('show');
+  document.querySelectorAll('.compare-card').forEach(c => c.classList.remove('show','winner'));
+  document.getElementById('btnPredict').disabled = true;
+  document.getElementById('btnCompare').disabled = true;
+  document.getElementById('fileInput').value = '';
+  hideErrors();
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) =>
+    t.classList.toggle('active', (i===0&&tab==='single')||(i===1&&tab==='compare'))
+  );
+  document.getElementById('singleMode').style.display  = tab==='single'  ? 'block' : 'none';
+  document.getElementById('compareMode').style.display = tab==='compare' ? 'block' : 'none';
+}
+
+function selectMethod(method, btn) {
+  selectedMethod = method;
+  document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('singleResult').classList.remove('show');
+}
+
+function renderBars(containerId, probs, topIdx) {
+  document.getElementById(containerId).innerHTML = probs.map((p, i) => `
+    <div class="prob-row">
+      <div class="prob-label">${p.emoji} ${p.label}</div>
+      <div class="prob-track"><div class="prob-fill ${i===topIdx?'top':''}" style="width:${p.prob}%"></div></div>
+      <div class="prob-val">${p.prob}%</div>
+    </div>`).join('');
+}
+
+function hideErrors() {
+  document.getElementById('singleError').classList.remove('show');
+  document.getElementById('compareError').classList.remove('show');
+}
+
+async function predictSingle() {
+  if (!currentFile) return;
+  const btn = document.getElementById('btnPredict');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Đang nhận diện...';
+  hideErrors();
+  document.getElementById('singleResult').classList.remove('show');
+  try {
+    const fd = new FormData(); fd.append('file', currentFile);
+    const res  = await fetch(`${API}/predict/${selectedMethod}`, { method:'POST', body:fd });
+    if (!res.ok) throw new Error((await res.json()).detail || 'Lỗi server');
+    const data = await res.json();
+    document.getElementById('resEmoji').textContent   = data.emoji;
+    document.getElementById('resEmotion').textContent = data.emotion;
+    document.getElementById('resConf').textContent    = `Confidence: ${data.confidence}%`;
+    document.getElementById('resMethod').textContent  = data.method;
+    document.getElementById('resTime').textContent    = `${data.time_ms}ms`;
+    document.getElementById('resAcc').textContent     = `${data.model_acc}%`;
+    document.getElementById('resFaces').textContent  = data.face_count > 1 ? `${data.face_count} faces → largest selected` : `${data.face_count} face`;
+    renderBars('probBars', data.probabilities, data.probabilities.findIndex(p => p.label === data.emotion));
+    document.getElementById('singleResult').classList.add('show');
+  } catch(e) {
+    const el = document.getElementById('singleError');
+    el.textContent = e.message; el.classList.add('show');
+  } finally {
+    btn.disabled = false; btn.innerHTML = 'Nhận diện cảm xúc';
+  }
+}
+
+async function predictAll() {
+  if (!currentFile) return;
+  const btn = document.getElementById('btnCompare');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Đang so sánh...';
+  hideErrors();
+  document.querySelectorAll('.compare-card').forEach(c => {
+    c.classList.remove('show','winner');
+    const wb = c.querySelector('.winner-badge'); if (wb) wb.remove();
+  });
+
+  const methods = [
+    { key:'lbp', id:'lbp' }, { key:'cnn', id:'cnn' },
+    { key:'pretrained', id:'pre' }, { key:'cbam', id:'cbam' },
+    { key:'convnext', id:'cnx' },
+  ];
+
+  try {
+    const results = await Promise.all(methods.map(async m => {
+      const fd = new FormData(); fd.append('file', currentFile);
+      const res = await fetch(`${API}/predict/${m.key}`, { method:'POST', body:fd });
+      if (!res.ok) throw new Error(`${m.key}: ${(await res.json()).detail}`);
+      return { ...(await res.json()), id: m.id };
+    }));
+
+    const winner = results.reduce((a,b) => a.model_acc > b.model_acc ? a : b);
+    results.forEach(data => {
+      const topIdx = data.probabilities.findIndex(p => p.label === data.emotion);
+      document.getElementById(`cc-${data.id}-emoji`).textContent = data.emoji;
+      document.getElementById(`cc-${data.id}-label`).textContent = data.emotion;
+      document.getElementById(`cc-${data.id}-conf`).textContent  = `${data.confidence}% · ${data.time_ms}ms`;
+      renderBars(`cc-${data.id}-bars`, data.probabilities, topIdx);
+      const card = document.getElementById(`cc-${data.id}`);
+      card.classList.add('show');
+      if (data.id === winner.id) {
+        card.classList.add('winner');
+        const badge = document.createElement('div');
+        badge.className = 'winner-badge'; badge.textContent = 'BEST MODEL';
+        card.querySelector('.cc-conf').after(badge);
+      }
+    });
+  } catch(e) {
+    const el = document.getElementById('compareError');
+    el.textContent = e.message; el.classList.add('show');
+  } finally {
+    btn.disabled = false; btn.innerHTML = 'So sánh cả 5 phương pháp';
+  }
+}
+</script>
+</body>
+</html>
