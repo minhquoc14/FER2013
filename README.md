@@ -148,27 +148,9 @@ Confusion matrix và biểu đồ so sánh chi tiết theo từng lớp cảm x�
 
 
 
-## 7. Web demo (real-time)
-
-Backend FastAPI expose API dự đoán cho cả 5 phương pháp cùng lúc, có face detection tự động trước khi phân loại.
-
-```bash
-python -m uvicorn server:app --reload --port 8000
-```
-
-Sau đó mở trình duyệt tại **http://localhost:8000** (server tự phục vụ luôn giao diện trong `frontend/index.html`).
-
-### API chính
-| Endpoint | Method | Mô tả |
-|---|---|---|
-| `/` | GET | Trang giao diện demo |
-| `/health` | GET | Kiểm tra server đã load model chưa |
-| `/predict/{method}` | POST | Dự đoán bằng 1 phương pháp cụ thể (`lbp`, `cnn`, `pretrained`, `cbam`, `convnext`) |
-| `/predict/all` | POST | Dự đoán bằng cả 5 phương pháp cùng lúc, trả về so sánh |
-
 ---
 
-## 8. Pipeline tiền xử lý
+## 7. Pipeline tiền xử lý
 
 Hệ thống tự động chia làm 3 luồng tiền xử lý tùy kiến trúc mô hình (chi tiết trong `dataset.py::get_transforms`):
 
@@ -182,7 +164,7 @@ Dữ liệu train/validation được chia bằng **Stratified Split** theo nhã
 
 ---
 
-## 9. Tài liệu tham khảo
+## 8. Tài liệu tham khảo
 
 1. Deep Facial Expression Recognition: A Survey, 2020.
 2. FER2013 Dataset, Kaggle.
